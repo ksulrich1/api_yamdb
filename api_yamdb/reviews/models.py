@@ -20,13 +20,18 @@ class User(AbstractUser):
         max_length=150,
         choices=ROLES,
         default=ROLE_USER,
-        blank=False,
         verbose_name='Права доступа',
     )
     username = models.CharField(
         unique=True,
         max_length=150,
         verbose_name='Никнейм',
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+\z',
+                message='Недопустимые символы'
+            )
+        ]
     )
     first_name = models.CharField(
         verbose_name='Имя',
@@ -68,7 +73,13 @@ class Category(models.Model):
     slug = models.SlugField(
         verbose_name="Адрес категории",
         max_length=50,
-        unique=True
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[-a-zA-Z0-9_]+$',
+                message='Недопустимые символы'
+            )
+        ]
     )
 
     def __str__(self):
