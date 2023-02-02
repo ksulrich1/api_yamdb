@@ -1,5 +1,3 @@
-from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
@@ -25,47 +23,65 @@ class GenreSerializer(serializers.ModelSerializer):
         exclude = ('id',)
         model = Genre
 
-class CommentSerializer(serializers.ModelSerializer):
-    review = serializers.SlugRelatedField(
-        slug_field='text',
-        read_only=True
+
+class TitlePostSerializer(serializers.ModelSerializer):
+    category = serializers.SlugRelatedField(
+        slug_field="slug", queryset=Category.objects.all()
     )
-    author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True
+    genre = serializers.SlugRelatedField(
+        slug_field="slug", queryset=Genre.objects.all(), many=True
     )
 
     class Meta:
-        fields = '__all__'
-        model = Comment
+        fields = (
+            'id', 'name', 'rating', 'description',
+            'year', 'category', 'genre'
+        )
+        model = Title
+
+
+class TitleGetSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+    rating = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        fields = (
+            'id', 'text', 'name', 'rating',
+            'year', 'category', 'genre', 'description'
+        )
+        model = Title
+
 
 class ReviewSerializer(serializers.ModelSerializer):
-    title = serializers.SlugRelatedField(
-        slug_field='name',
-        read_only=True
-    )
     author = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True
+        read_only=True,
+        slug_field='username'
     )
+    score = serializers.IntegerField(min_value=1, max_value=10)
 
-    def validate_score(self, value):
-        if 0 > value > 10:
-            raise serializers.ValidationError('Оценка по 10-бальной шкале!')
-        return value
-
-    def validate(self, data):
-        request = self.context['request']
-        author = request.user
-        title_id = self.context.get('view').kwargs.get('title_id')
-        title = get_object_or_404(Title, pk=title_id)
-        if (
-            request.method == 'POST'
-            and Review.objects.filter(title=title, author=author).exists()
-        ):
-            raise ValidationError('Может существовать только один отзыв!')
-        return data
+    def validate_review(self, validated_data):
+        count_review_title = Review.objects.filter(
+            author=validated_data.get('author'),
+            title=validated_data.get('title')
+        ).count()
+        if count_review_title == 1:
+            raise serializers.ValidationError(
+                'Нельзя оставлять больше одного отзыва'
+            )
+        return super().validate_review(validated_data)
 
     class Meta:
-        fields = '__all__'
         model = Review
+        fields = ('id', 'text', 'name', 'score', 'pub_date')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')
