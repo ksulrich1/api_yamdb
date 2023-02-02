@@ -3,7 +3,6 @@ from rest_framework.routers import DefaultRouter
 
 from .views import APIGetToken, APIUserSignup
 
-
 router_v1 = DefaultRouter()
 router_v1.register()
 
