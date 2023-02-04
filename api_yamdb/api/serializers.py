@@ -116,6 +116,6 @@ class UserSignUpSerializer(serializers.ModelSerializer):
             )]
 
     def validate_username(self, value):
-        if value.lower() == 'me':
-            raise ValidationError('username не может быть me')
+        if value == 'me':
+            raise ValidationError('username не может быть "me"')
         return value
