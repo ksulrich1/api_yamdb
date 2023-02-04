@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from django.db.models import Avg
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import action
+
 from reviews.models import Review, Title, User, Category, Genre
 from .utils import ListCreateDestroyViewSet
 from .permissions import (
@@ -16,7 +17,7 @@ from .permissions import (
     IsAdminUserOrReadOnly
 )
 from .serializers import (
-    CategorySerializer, CommentSerializer,
+    CategorySerializer, CommentSerializer, GetTokenSerializer,
     ReviewSerializer, GenreSerializer,
     TitlePostSerializer, UserSerializer
 )
@@ -37,7 +38,7 @@ class GenreViewSet(ListCreateDestroyViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitlePostSerializer
-    """permission_classes = ()"""
+    permission_classes = (IsAdminUserOrReadOnly)
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).order_by('-year', 'name')
 
@@ -49,7 +50,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
-    """permission_classes = ()"""
+    permission_classes = (IsAdminUser)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -76,7 +77,7 @@ class APIUserSignup(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        serializer = 'Нужен сериализор'(data=request.data)
+        serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data.get('username')
         email = serializer.validated_data.get('email')
@@ -110,7 +111,7 @@ class APIGetToken(APIView):
             return Response(
                 'confirmation_code не может быть пустым',
                 status=status.HTTP_400_BAD_REQUEST)
-        serializer = 'Нужен сериализор'(data=request.data)
+        serializer = GetTokenSerializer(data=request.data)
         serializer.is_valid()
         username = serializer.validated_data.get('username')
         user = get_object_or_404(User, username=username)

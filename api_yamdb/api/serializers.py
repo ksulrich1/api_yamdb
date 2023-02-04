@@ -13,6 +13,16 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
+class GetTokenSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    confirmation_code = serializers.CharField()
+
+    class Meta:
+        model = User
+        fields = ['username', 'confirmation_code', ]
+        ordering = ['username']
+
+
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         exclude = ('id',)
