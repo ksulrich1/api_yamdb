@@ -22,10 +22,12 @@ from .serializers import (
     CategorySerializer, CommentSerializer, GetTokenSerializer,
     ReviewSerializer, GenreSerializer,
     TitlePostSerializer, UserSerializer,
+    TitleGetSerializer,
 )
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
+    search_fields = ('name',)
     lookup_field = 'slug'
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -36,17 +38,20 @@ class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminUserOrReadOnly,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitlePostSerializer
     permission_classes = (IsAdminUserOrReadOnly,)
+    search_fields = ('genre',)
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).order_by('-year', 'name')
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
-            return TitlePostSerializer
+            return TitleGetSerializer
         return TitlePostSerializer
 
 

@@ -1,6 +1,9 @@
-from rest_framework import serializers
+from rest_framework import serializers, status
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from rest_framework.validators import UniqueTogetherValidator, ValidationError
+from rest_framework.response import Response
+from http import HTTPStatus
+from django.http import HttpResponse
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -64,7 +67,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         fields = (
-            'id', 'text', 'name', 'rating',
+            'id', 'name', 'rating',
             'year', 'category', 'genre', 'description'
         )
         model = Title
@@ -83,10 +86,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             title=validated_data.get('title')
         ).count()
         if count_review_title == 1:
-            raise serializers.ValidationError(
-                'Нельзя оставлять больше одного отзыва'
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
             )
-        return super().validate_review(validated_data)
 
     class Meta:
         model = Review
