@@ -21,7 +21,16 @@ class User(AbstractUser):
         (ADMIN, 'Администратор'),
     )
     username = models.CharField(
-        'Имя пользователя', max_length=150, unique=True)
+        'Имя пользователя',
+        max_length=150,
+        unique=True,
+        validators=[
+            RegexValidator(
+            regex=r'^[\w.@+-]',
+            message='Недопустимые символы'
+            )
+        ]
+        )
     bio = models.TextField('Биография', blank=True)
     email = models.EmailField('Email', blank=False, unique=True)
     role = models.CharField(
