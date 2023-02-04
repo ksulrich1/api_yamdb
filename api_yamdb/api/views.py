@@ -21,7 +21,7 @@ from .permissions import (
 from .serializers import (
     CategorySerializer, CommentSerializer, GetTokenSerializer,
     ReviewSerializer, GenreSerializer,
-    TitlePostSerializer, UserSerializer
+    TitlePostSerializer, UserSerializer,
 )
 
 
@@ -29,18 +29,18 @@ class CategoryViewSet(ListCreateDestroyViewSet):
     lookup_field = 'slug'
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminUserOrReadOnly)
+    permission_classes = (IsAdminUserOrReadOnly,)
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminUserOrReadOnly)
+    permission_classes = (IsAdminUserOrReadOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitlePostSerializer
-    permission_classes = (IsAdminUserOrReadOnly)
+    permission_classes = (IsAdminUserOrReadOnly,)
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).order_by('-year', 'name')
 
@@ -59,7 +59,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=('GET', 'PATCH'),
-        permission_classes=(IsAuthenticated)
+        permission_classes=(IsAuthenticated,)
     )
     def me(self, request):
         if request.method == 'GET':
@@ -76,7 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class APIUserSignup(APIView):
-    permission_classes = (AllowAny)
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
