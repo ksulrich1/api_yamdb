@@ -1,8 +1,11 @@
-from django.utils import timezone
-from rest_framework import serializers
+import datetime as dt
+
+from django.core.exceptions import ValidationError
 
 
 def year_validator(value):
-    if value > timezone.now().year:
-        raise serializers.ValidationError('Проверьте год')
-    return value
+    if value > dt.datetime.now().year:
+        raise ValidationError(
+            f'год {value} не может быть больше текущего',
+            params={'value': value},
+        )

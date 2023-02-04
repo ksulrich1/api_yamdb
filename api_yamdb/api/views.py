@@ -5,6 +5,7 @@ from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from django.db.models import Avg
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.decorators import action
@@ -12,9 +13,10 @@ from rest_framework.decorators import action
 from reviews.models import Review, Title, User, Category, Genre
 from .utils import ListCreateDestroyViewSet
 from .permissions import (
-    AdminModeratorAuthorPermission,
     IsAdminUser,
-    IsAdminUserOrReadOnly
+    IsAdminUserOrReadOnly,
+    IsModerator,
+    IsUserOrReadOnly,
 )
 from .serializers import (
     CategorySerializer, CommentSerializer, GetTokenSerializer,
@@ -50,14 +52,14 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 class UserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
-    permission_classes = (IsAdminUser)
+    permission_classes = (IsAdminUser,)
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
     @action(
         detail=False,
         methods=('GET', 'PATCH'),
-        permission_classes=(IsAdminUser)
+        permission_classes=(IsAuthenticated)
     )
     def me(self, request):
         if request.method == 'GET':
@@ -74,7 +76,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class APIUserSignup(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (AllowAny)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -128,7 +130,9 @@ class APIGetToken(APIView):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
-    permission_classes = (AdminModeratorAuthorPermission,)
+    permission_classes = [
+        IsModerator | IsAdminUserOrReadOnly | IsUserOrReadOnly
+    ]
 
     def get_queryset(self):
         review = get_object_or_404(
@@ -145,7 +149,9 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
-    permission_classes = (AdminModeratorAuthorPermission,)
+    permission_classes = [
+        IsModerator | IsAdminUserOrReadOnly | IsUserOrReadOnly
+    ]
 
     def get_queryset(self):
         title = get_object_or_404(

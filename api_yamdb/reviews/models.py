@@ -1,3 +1,4 @@
+import uuid
 from django.core.validators import (
     RegexValidator,
     MaxValueValidator,
@@ -8,66 +9,44 @@ from django.contrib.auth.models import AbstractUser
 
 from .validators import year_validator
 
+USER = 'user'
+MODERATOR = 'moderator'
+ADMIN = 'admin'
+
 
 class User(AbstractUser):
-    ROLE_USER = 'user'
-    ROLE_MODERATOR = 'moderator'
-    ROLE_ADMIN = 'admin'
-    ROLES = (
-        (ROLE_USER, 'Пользователь'),
-        (ROLE_MODERATOR, 'Модератор'),
-        (ROLE_ADMIN, 'Админ'),
-    )
-    role = models.CharField(
-        max_length=150,
-        choices=ROLES,
-        default=ROLE_USER,
-        verbose_name='Права доступа',
+    ROLE_CHOICES = (
+        (USER, 'Пользователь'),
+        (MODERATOR, 'Модератор'),
+        (ADMIN, 'Администратор'),
     )
     username = models.CharField(
-        unique=True,
-        max_length=150,
-        verbose_name='Никнейм',
-        validators=[
-            RegexValidator(
-                regex=r'^[\w.@+-]+\z',
-                message='Недопустимые символы'
-            )
-        ]
+        'Имя пользователя', max_length=150, unique=True)
+    bio = models.TextField('Биография', blank=True)
+    email = models.EmailField('Email', blank=False, unique=True)
+    role = models.CharField(
+        'Роль', max_length=9, choices=ROLE_CHOICES, default=USER,
     )
-    first_name = models.CharField(
-        verbose_name='Имя',
-        max_length=150,
-        blank=True,
-        null=True,
-    )
-    last_name = models.CharField(
-        verbose_name='Фамилия',
-        max_length=150,
-        blank=True,
-        null=True,
-    )
-    email = models.EmailField(
-        ('email address'),
-        max_length=254
-    )
-    bio = models.TextField(
-        blank=True,
-        null=True,
-        verbose_name='О себе',
-    )
+    confirmation_code = models.CharField(
+        max_length=150, default=uuid.uuid4, editable=False)
 
-    @property
-    def is_admin(self):
-        return self.role == User.ROLE_ADMIN
-
-    @property
-    def is_moderator(self):
-        return self.role == User.ROLE_MODERATOR
+    class Meta:
+        ordering = ['-id']
 
     @property
     def is_user(self):
-        return self.role == User.ROLE_USER
+        return self.role == USER
+
+    @property
+    def is_moderator(self):
+        return self.role == MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == ADMIN
+
+    def __str__(self):
+        return self.username
 
 
 class Category(models.Model):
@@ -111,6 +90,7 @@ class Title(models.Model):
     year = models.IntegerField(validators=[year_validator])
     description = models.TextField(
         blank=True,
+        null=True,
     )
     genre = models.ManyToManyField(
         Genre,

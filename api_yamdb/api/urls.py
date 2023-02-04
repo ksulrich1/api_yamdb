@@ -12,6 +12,7 @@ from .views import (
     UserViewSet,
 )
 
+app_name = 'api'
 
 router_v1 = DefaultRouter()
 router_v1.register('categories', CategoryViewSet, basename='categories')
