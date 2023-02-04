@@ -8,7 +8,10 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Avg
 from rest_framework_simplejwt.tokens import AccessToken
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
+from api.filters import TitleFilter
+from rest_framework.filters import SearchFilter
 
 from reviews.models import Review, Title, User, Category, Genre
 from .utils import ListCreateDestroyViewSet
@@ -38,6 +41,7 @@ class GenreViewSet(ListCreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminUserOrReadOnly,)
+    filter_backends = (SearchFilter,)
     search_fields = ('name',)
     lookup_field = 'slug'
 
@@ -45,7 +49,8 @@ class GenreViewSet(ListCreateDestroyViewSet):
 class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitlePostSerializer
     permission_classes = (IsAdminUserOrReadOnly,)
-    search_fields = ('genre',)
+    filterset_class = TitleFilter
+    filter_backends = (DjangoFilterBackend, )
     queryset = Title.objects.all().annotate(
         rating=Avg('reviews__score')).order_by('-year', 'name')
 
