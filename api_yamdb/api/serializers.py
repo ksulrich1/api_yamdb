@@ -120,5 +120,7 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 
     def validate_username(self, value):
         if value == 'me':
-            raise ValidationError('username не может быть "me"')
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
+            )
         return value

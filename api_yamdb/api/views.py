@@ -85,6 +85,12 @@ class UserViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save(role=request.user.role)
         return Response(serializer.data)
+ 
+    def put(self, request):
+        if request.method == 'PUT':
+            return Response(
+                'Запрос не может быть выполнен',
+                status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class APIUserSignup(APIView):
@@ -94,16 +100,19 @@ class APIUserSignup(APIView):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         username = serializer.validated_data.get('username')
-        email = serializer.validated_data.get('email')
-        user = User.objects.create(
-            username=username, email=email
-        )
-        mail_subject = 'Ваш код для получения токена'
-        message = f'Код подтверждения для пользователя {username}: '\
-                  f'{user.confirmation_code}'
-        send_mail(mail_subject, message, settings.SITE_URL, [email])
+        if serializer.validated_data['username'] != 'me':
+            email = serializer.validated_data.get('email')
+            user = User.objects.create(username=username, email=email)
+            mail_subject = 'Ваш код для получения токена'
+            message = f'Код подтверждения для пользователя {username}: '\
+                f'{user.confirmation_code}'
+            send_mail(mail_subject, message, settings.SITE_URL, [email])
+            return Response(
+                serializer.validated_data, status=status.HTTP_200_OK
+            )
         return Response(
-            serializer.validated_data, status=status.HTTP_200_OK)
+            'Username указан невено!', status=status.HTTP_400_BAD_REQUEST
+        )
 
 
 class APIGetToken(APIView):
