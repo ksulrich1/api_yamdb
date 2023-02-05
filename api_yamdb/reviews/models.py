@@ -30,7 +30,7 @@ class User(AbstractUser):
             message='Недопустимые символы'
             )
         ]
-        )
+    )
     bio = models.TextField('Биография', blank=True)
     email = models.EmailField('Email', blank=False, unique=True)
     role = models.CharField(
@@ -146,6 +146,16 @@ class Review(models.Model):
         verbose_name='Дата рецензии',
         help_text='Дата рецензии',
     )
+
+
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        ordering = ('-pub_date', 'score')
+        constraints = [
+            models.UniqueConstraint(fields=['title', 'author'],
+                                    name='unique review')
+        ]
 
     def __str__(self):
         return self.title

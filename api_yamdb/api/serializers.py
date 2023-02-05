@@ -81,19 +81,20 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
     score = serializers.IntegerField(min_value=1, max_value=10)
 
-    def validate_review(self, validated_data):
-        count_review_title = Review.objects.filter(
-            author=validated_data.get('author'),
-            title=validated_data.get('title')
-        ).count()
-        if count_review_title == 1:
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
     class Meta:
         model = Review
         fields = ('id', 'text', 'score', 'pub_date', 'author')
+
+    def validate(self, data):
+        if not self.context.get('request').method == 'POST':
+            return data
+        author = self.context.get('request').user
+        title_id = self.context.get('view').kwargs.get('title_id')
+        if Review.objects.filter(author=author, title=title_id).exists():
+            raise serializers.ValidationError(
+                'Вы уже оставляли отзыв на это произведение'
+            )
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
