@@ -30,11 +30,11 @@ from .serializers import (
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
-    search_fields = ('name',)
-    lookup_field = 'slug'
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminUserOrReadOnly,)
+    search_fields = ('=name',)
+    lookup_field = 'slug'
 
 
 class GenreViewSet(ListCreateDestroyViewSet):
@@ -67,6 +67,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     filter_backends = (SearchFilter, )
     search_fields = ('username', )
+    http_method_names = ['patch', 'get', 'post', 'delete']
 
     @action(
         detail=False,
@@ -84,8 +85,8 @@ class UserViewSet(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         serializer.save(role=request.user.role)
-        return Response(serializer.data)
- 
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     def put(self, request):
         if request.method == 'PUT':
             return Response(
@@ -185,3 +186,13 @@ class ReviewViewSet(viewsets.ModelViewSet):
             Title,
             id=self.kwargs.get('title_id'))
         serializer.save(author=self.request.user, title=title)
+
+    def validate_review(self, request):
+        count_review_title = Review.objects.filter(
+            author=request.data.get('author'),
+            title=request.data.get('title')
+        ).count()
+        if count_review_title == 1:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST
+            )
