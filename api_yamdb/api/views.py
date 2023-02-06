@@ -68,6 +68,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     filter_backends = (SearchFilter, )
     search_fields = ('username', )
+    http_method_names = ['get', 'patch', 'post', 'delete']
 
     @action(
         detail=False,
