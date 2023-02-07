@@ -1,5 +1,8 @@
-from datetime import timedelta
+import django
 import os
+django.setup()
+
+from datetime import timedelta
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
