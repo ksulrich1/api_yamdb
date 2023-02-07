@@ -1,8 +1,6 @@
-import django
 import os
 from datetime import timedelta
 from pathlib import Path
-django.setup()
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework_simplejwt",
-    "rest_framework_simplejwt.tokens",
+    "rest_framework_simplejwt.token_blacklist",
     "django_filters",
     "api",
     "reviews",
