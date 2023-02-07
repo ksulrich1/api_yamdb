@@ -24,7 +24,7 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         validators=[RegexValidator(regex=r"^[\w.@+-]",
-        message="Недопустимые символы")],
+                    message="Недопустимые символы")],
     )
     bio = models.TextField("Биография", blank=True)
     email = models.EmailField("Email", blank=False, unique=True)
@@ -65,7 +65,7 @@ class Category(models.Model):
         unique=True,
         validators=[
             RegexValidator(regex=r"^[-a-zA-Z0-9_]+$",
-            message="Недопустимые символы")
+                           message="Недопустимые символы")
         ],
     )
 
@@ -81,7 +81,7 @@ class Genre(models.Model):
         unique=True,
         validators=[
             RegexValidator(regex=r"^[-a-zA-Z0-9_]+$",
-            message="Недопустимые символы")
+                           message="Недопустимые символы")
         ],
     )
 
@@ -145,7 +145,7 @@ class Review(models.Model):
         ordering = ("-pub_date", "score")
         constraints = [
             models.UniqueConstraint(fields=["title", "author"],
-            name="unique review")
+                                    name="unique review")
         ]
 
     def __str__(self):
