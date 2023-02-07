@@ -1,5 +1,8 @@
+from email.message import EmailMessage
+
 from django.conf import settings
 from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.permissions import AllowAny
@@ -25,7 +28,7 @@ from .serializers import (
     CategorySerializer, CommentSerializer, GetTokenSerializer,
     ReviewSerializer, GenreSerializer,
     TitlePostSerializer, UserSerializer,
-    TitleGetSerializer,
+    TitleGetSerializer, UserSignUpSerializer,
 )
 
 
