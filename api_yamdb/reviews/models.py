@@ -1,5 +1,8 @@
 import uuid
-from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
+
+from django.core.validators import (RegexValidator,
+                                    MaxValueValidator,
+                                    MinValueValidator)
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -20,7 +23,8 @@ class User(AbstractUser):
         "Имя пользователя",
         max_length=150,
         unique=True,
-        validators=[RegexValidator(regex=r"^[\w.@+-]", message="Недопустимые символы")],
+        validators=[RegexValidator(regex=r"^[\w.@+-]",
+        message="Недопустимые символы")],
     )
     bio = models.TextField("Биография", blank=True)
     email = models.EmailField("Email", blank=False, unique=True)
@@ -60,7 +64,8 @@ class Category(models.Model):
         max_length=50,
         unique=True,
         validators=[
-            RegexValidator(regex=r"^[-a-zA-Z0-9_]+$", message="Недопустимые символы")
+            RegexValidator(regex=r"^[-a-zA-Z0-9_]+$",
+            message="Недопустимые символы")
         ],
     )
 
@@ -75,7 +80,8 @@ class Genre(models.Model):
         max_length=50,
         unique=True,
         validators=[
-            RegexValidator(regex=r"^[-a-zA-Z0-9_]+$", message="Недопустимые символы")
+            RegexValidator(regex=r"^[-a-zA-Z0-9_]+$",
+            message="Недопустимые символы")
         ],
     )
 
@@ -96,7 +102,8 @@ class Title(models.Model):
         verbose_name="Жанр",
     )
     category = models.ForeignKey(
-        Category, on_delete=models.SET_NULL, null=True, related_name="title"
+        Category, on_delete=models.SET_NULL,
+        null=True, related_name="title"
     )
 
     def __str__(self):
@@ -137,7 +144,8 @@ class Review(models.Model):
         verbose_name_plural = "Отзывы"
         ordering = ("-pub_date", "score")
         constraints = [
-            models.UniqueConstraint(fields=["title", "author"], name="unique review")
+            models.UniqueConstraint(fields=["title", "author"],
+            name="unique review")
         ]
 
     def __str__(self):
