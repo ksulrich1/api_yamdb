@@ -1,9 +1,5 @@
-from rest_framework import serializers, status
+from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
-from rest_framework.validators import UniqueTogetherValidator, ValidationError
-from rest_framework.response import Response
-from http import HTTPStatus
-from django.http import HttpResponse
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -108,20 +104,28 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'pub_date')
 
 
-class UserSignUpSerializer(serializers.ModelSerializer):
+class AuthSignUpSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email',)
-        validators = [
-            UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=['username', 'email']
-            )]
+        fields = ('email', 'username')
 
-    def validate_username(self, value):
-        if value == 'me':
-            return Response(
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        return value
+    def validate_username(self, name):
+        if name == 'me':
+            raise serializers.ValidationError('Имя пользователя "me" не разрешено.')
+        return name
+
+    def validate(self, data):
+        username = data.get('username')
+        email = data.get('email')
+        if (
+                User.objects.filter(username=username).exists()
+                and User.objects.get(username=username).email != email
+        ):
+            raise serializers.ValidationError('Пользователь с таким username уже зарегистрирован')
+        if (
+                User.objects.filter(email=email).exists()
+                and User.objects.get(email=email).username != username
+        ):
+            raise serializers.ValidationError('Указанная почта уже зарегестрирована другим пользователем')
+        return data
