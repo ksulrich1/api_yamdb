@@ -1,4 +1,5 @@
 from rest_framework import serializers
+
 from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
@@ -63,12 +64,17 @@ class TitleGetSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
-        fields = ("id", "name", "rating", "year", "category", "genre", "description")
+        fields = (
+            "id", "name", "rating", "year",
+            "category", "genre", "description"
+        )
         model = Title
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="username")
     score = serializers.IntegerField(min_value=1, max_value=10)
 
     class Meta:
@@ -88,7 +94,9 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="username")
 
     class Meta:
         model = Comment
@@ -102,7 +110,8 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
 
     def validate_username(self, name):
         if name == "me":
-            raise serializers.ValidationError('Имя пользователя "me" не разрешено.')
+            raise serializers.ValidationError(
+                'Имя пользователя "me" не разрешено.')
         return name
 
     def validate(self, data):
