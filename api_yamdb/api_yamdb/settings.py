@@ -1,5 +1,3 @@
-import django
-django.setup()
 from datetime import timedelta
 import os
 from pathlib import Path
