@@ -5,7 +5,7 @@ class ListCreateDestroyViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.DestroyModelMixin,
-    viewsets.GenericViewSet
+    viewsets.GenericViewSet,
 ):
     """
     Concrete view for listing a queryset or creating a model instance.
@@ -16,4 +16,5 @@ class ListCreateDestroyViewSet(
     but does include the base set of generic view behavior, such as
     the `get_object` and `get_queryset` methods.
     """
+
     pass

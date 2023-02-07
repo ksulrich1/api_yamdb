@@ -1,46 +1,41 @@
 import uuid
-from django.core.validators import (
-    RegexValidator,
-    MaxValueValidator,
-    MinValueValidator
-)
+from django.core.validators import RegexValidator, MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from .validators import year_validator
 
-USER = 'user'
-MODERATOR = 'moderator'
-ADMIN = 'admin'
+USER = "user"
+MODERATOR = "moderator"
+ADMIN = "admin"
 
 
 class User(AbstractUser):
     ROLE_CHOICES = (
-        (USER, 'Пользователь'),
-        (MODERATOR, 'Модератор'),
-        (ADMIN, 'Администратор'),
+        (USER, "Пользователь"),
+        (MODERATOR, "Модератор"),
+        (ADMIN, "Администратор"),
     )
     username = models.CharField(
-        'Имя пользователя',
+        "Имя пользователя",
         max_length=150,
         unique=True,
-        validators=[
-            RegexValidator(
-            regex=r'^[\w.@+-]',
-            message='Недопустимые символы'
-            )
-        ]
+        validators=[RegexValidator(regex=r"^[\w.@+-]", message="Недопустимые символы")],
     )
-    bio = models.TextField('Биография', blank=True)
-    email = models.EmailField('Email', blank=False, unique=True)
+    bio = models.TextField("Биография", blank=True)
+    email = models.EmailField("Email", blank=False, unique=True)
     role = models.CharField(
-        'Роль', max_length=9, choices=ROLE_CHOICES, default=USER,
+        "Роль",
+        max_length=9,
+        choices=ROLE_CHOICES,
+        default=USER,
     )
     confirmation_code = models.CharField(
-        max_length=150, default=uuid.uuid4, editable=False)
+        max_length=150, default=uuid.uuid4, editable=False
+    )
 
     class Meta:
-        ordering = ['-id']
+        ordering = ["-id"]
 
     @property
     def is_user(self):
@@ -65,11 +60,8 @@ class Category(models.Model):
         max_length=50,
         unique=True,
         validators=[
-            RegexValidator(
-                regex=r'^[-a-zA-Z0-9_]+$',
-                message='Недопустимые символы'
-            )
-        ]
+            RegexValidator(regex=r"^[-a-zA-Z0-9_]+$", message="Недопустимые символы")
+        ],
     )
 
     def __str__(self):
@@ -83,11 +75,8 @@ class Genre(models.Model):
         max_length=50,
         unique=True,
         validators=[
-            RegexValidator(
-                regex=r'^[-a-zA-Z0-9_]+$',
-                message='Недопустимые символы'
-            )
-        ]
+            RegexValidator(regex=r"^[-a-zA-Z0-9_]+$", message="Недопустимые символы")
+        ],
     )
 
     def __str__(self):
@@ -103,14 +92,11 @@ class Title(models.Model):
     )
     genre = models.ManyToManyField(
         Genre,
-        related_name='title',
-        verbose_name='Жанр',
+        related_name="title",
+        verbose_name="Жанр",
     )
     category = models.ForeignKey(
-        Category,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='title'
+        Category, on_delete=models.SET_NULL, null=True, related_name="title"
     )
 
     def __str__(self):
@@ -121,40 +107,37 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name='Рассматриваемое произведение',
-        help_text='Рассматриваемое произведение',
+        related_name="reviews",
+        verbose_name="Рассматриваемое произведение",
+        help_text="Рассматриваемое произведение",
     )
     text = models.TextField(
-        verbose_name='Текст рецензии',
-        help_text='Оставьте свою рецензию',
+        verbose_name="Текст рецензии",
+        help_text="Оставьте свою рецензию",
     )
     author = models.ForeignKey(
         User,
-        verbose_name='Автор рецензии',
-        help_text='Автор рецензии',
+        verbose_name="Автор рецензии",
+        help_text="Автор рецензии",
         on_delete=models.CASCADE,
-        related_name='reviews'
+        related_name="reviews",
     )
     score = models.IntegerField(
-        verbose_name='Оценка',
-        validators=(MinValueValidator(1),
-                    MaxValueValidator(10)),
+        verbose_name="Оценка",
+        validators=(MinValueValidator(1), MaxValueValidator(10)),
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Дата рецензии',
-        help_text='Дата рецензии',
+        verbose_name="Дата рецензии",
+        help_text="Дата рецензии",
     )
 
-
     class Meta:
-        verbose_name = 'Отзыв'
-        verbose_name_plural = 'Отзывы'
-        ordering = ('-pub_date', 'score')
+        verbose_name = "Отзыв"
+        verbose_name_plural = "Отзывы"
+        ordering = ("-pub_date", "score")
         constraints = [
-            models.UniqueConstraint(fields=['title', 'author'],
-                                    name='unique review')
+            models.UniqueConstraint(fields=["title", "author"], name="unique review")
         ]
 
     def __str__(self):
@@ -165,30 +148,29 @@ class Comment(models.Model):
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        help_text='Произведение к которому относится коментарий',
-        related_name='comments',
-        verbose_name='Произведение'
+        help_text="Произведение к которому относится коментарий",
+        related_name="comments",
+        verbose_name="Произведение",
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Автор',
-        help_text='Автор который оставил коментарий',
+        related_name="comments",
+        verbose_name="Автор",
+        help_text="Автор который оставил коментарий",
     )
     text = models.TextField(
-        help_text='Текст нового коментария',
-        verbose_name='Коментарий'
+        help_text="Текст нового коментария", verbose_name="Коментарий"
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
         db_index=True,
-        help_text='Дата добавления нового коментария',
-        verbose_name='Дата'
+        help_text="Дата добавления нового коментария",
+        verbose_name="Дата",
     )
 
     class Meta:
-        ordering = ('pub_date',)
+        ordering = ("pub_date",)
 
     def __str__(self):
         return self.text
