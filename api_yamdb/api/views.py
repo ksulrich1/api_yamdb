@@ -1,38 +1,27 @@
+from api.filters import TitleFilter
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, status
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
 from django.db.models import Avg
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.decorators import action
-from api.filters import TitleFilter
+from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.filters import SearchFilter
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+from reviews.models import Category, Genre, Review, Title, User
+
 from api_yamdb.settings import SITE_URL
 
-from reviews.models import Review, Title, User, Category, Genre
+from .permissions import (IsAdminUser, IsAdminUserOrReadOnly, IsModerator,
+                          IsUserOrReadOnly)
+from .serializers import (AuthSignUpSerializer, CategorySerializer,
+                          CommentSerializer, GenreSerializer,
+                          GetTokenSerializer, ReviewSerializer,
+                          TitleGetSerializer, TitlePostSerializer,
+                          UserSerializer)
 from .utils import ListCreateDestroyViewSet
-from .permissions import (
-    IsAdminUser,
-    IsAdminUserOrReadOnly,
-    IsModerator,
-    IsUserOrReadOnly,
-)
-from .serializers import (
-    AuthSignUpSerializer,
-    CategorySerializer,
-    CommentSerializer,
-    GetTokenSerializer,
-    ReviewSerializer,
-    GenreSerializer,
-    TitlePostSerializer,
-    UserSerializer,
-    TitleGetSerializer,
-)
 
 
 class CategoryViewSet(ListCreateDestroyViewSet):
@@ -121,10 +110,9 @@ def signup(request):
 def send_confirmation_code(username):
     user = get_object_or_404(User, username=username)
     confirmation_code = default_token_generator.make_token(user)
-    user.confirmation_code = confirmation_code
     send_mail(
         "Код регистрации",
-        f"Код для получения токена {user.confirmation_code}",
+        f"Код для получения токена {confirmation_code}",
         SITE_URL,
         [user.email],
         fail_silently=False,
