@@ -9,7 +9,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 from reviews.models import Category, Genre, Review, Title, User
 
 from api_yamdb.settings import SITE_URL
@@ -100,7 +100,7 @@ def signup(request):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     user = get_object_or_404(User, username=username)
-    serializer = AuthSignUpSerializer(user, data=request.data, partial=True)
+    serializer = AuthSignUpSerializer(user, data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     send_confirmation_code(username)
@@ -125,12 +125,13 @@ def send_confirmation_code(username):
 def get_token(request):
     serializer = GetTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    username = serializer.validated_data["username"]
-    confirmation_code = serializer.validated_data["confirmation_code"]
+    username = serializer.validated_data.get("username")
+    confirmation_code = serializer.validated_data.get("confirmation_code")
     user = get_object_or_404(User, username=username)
-    if user.confirmation_code == confirmation_code:
-        refresh = RefreshToken.for_user(user)
-        token_data = {"token": str(refresh.access_token)}
+    if default_token_generator.check_token(
+        user, str(confirmation_code)
+    ):
+        token_data = {"token": str(AccessToken.for_user(user))}
         return Response(token_data, status=status.HTTP_200_OK)
     return Response("Неверный код подтверждения",
                     status=status.HTTP_400_BAD_REQUEST)
